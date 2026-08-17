@@ -11,7 +11,7 @@
 </head>
 <body><main class="wrap">
 <h1>B1 iPhone Compatibility Check</h1>
-<p class="sub">Read-only browser/runtime diagnostics for B1 Label Studio v4.1.1. This page does not connect to the printer or change the frozen print baseline.</p>
+<p class="sub">Read-only browser/runtime diagnostics for B1 Label Studio v4.2.0. This page does not connect to the printer or change the qualified print baseline.</p>
 <section class="card" id="checks"></section>
 <section class="card">
 <div class="actions"><button id="btCheck">Check Bluetooth availability</button><button id="copy">Copy diagnostic summary</button><a class="btn primary" href="./">Open B1 Label Studio</a></div>
@@ -22,7 +22,7 @@
 <script>
 'use strict';
 const checks=document.getElementById('checks'),summary=document.getElementById('summary');
-let btAvailability='Not checked';
+let btAvailability='Not checked',releaseInfo=null;
 function yes(v){return v?'Available':'Unavailable'}
 function row(name,value,state,detail=''){return `<div class="row"><div><div class="name">${name}</div>${detail?`<div class="detail">${detail}</div>`:''}</div><span class="pill ${state}">${value}</span></div>`}
 function snapshot(){
@@ -31,7 +31,8 @@ function snapshot(){
   const canvas=document.createElement('canvas'),toBlob=typeof canvas.toBlob==='function';
   return {secure,bt,btAvailability,share,canShare,storage,canvas:!!canvas.getContext('2d'),toBlob,file:typeof File==='function',blob:typeof Blob==='function',reader:typeof FileReader==='function',uuid:typeof crypto?.randomUUID==='function',url:location.href,userAgent:navigator.userAgent};
 }
-function render(){const s=snapshot();checks.innerHTML=
+function render(){const s=snapshot(),rel=releaseInfo?.version||'checking…',hash=releaseInfo?.sha256||'';checks.innerHTML=
+  row('Deployed B1 Studio release',rel,releaseInfo?'ok':'warn',hash?`SHA-256 ${hash}`:'Reading release-info.json…')+
   row('Secure HTTPS context',s.secure?'Yes':'No',s.secure?'ok':'bad',s.secure?'Required for Web Bluetooth and other protected browser APIs.':'Open the GitHub Pages HTTPS URL.')+
   row('Web Bluetooth API',yes(s.bt),s.bt?'ok':'warn',s.bt?'navigator.bluetooth is exposed by this runtime.':'Direct B1 BLE printing is unavailable in this runtime.')+
   row('Bluetooth adapter availability',s.btAvailability,s.btAvailability==='Yes'?'ok':s.btAvailability==='No'?'bad':'warn')+
@@ -41,9 +42,10 @@ function render(){const s=snapshot();checks.innerHTML=
   row('Canvas 2D + PNG blob',s.canvas&&s.toBlob?'Available':'Unavailable',s.canvas&&s.toBlob?'ok':'bad')+
   row('File / Blob / FileReader',s.file&&s.blob&&s.reader?'Available':'Incomplete',s.file&&s.blob&&s.reader?'ok':'bad')+
   row('crypto.randomUUID',yes(s.uuid),s.uuid?'ok':'warn');
-  summary.textContent=[`B1 Label Studio compatibility snapshot`, `Time: ${new Date().toISOString()}`, `URL: ${s.url}`, `Secure context: ${s.secure?'Yes':'No'}`, `Web Bluetooth API: ${s.bt?'Available':'Unavailable'}`, `Bluetooth availability: ${s.btAvailability}`, `Web Share: ${s.share?'Available':'Unavailable'}`, `navigator.canShare: ${s.canShare?'Available':'Unavailable'}`, `Local storage: ${s.storage?'Available':'Unavailable'}`, `Canvas/toBlob: ${s.canvas&&s.toBlob?'Available':'Unavailable'}`, `File APIs: ${s.file&&s.blob&&s.reader?'Available':'Incomplete'}`, `crypto.randomUUID: ${s.uuid?'Available':'Unavailable'}`, `User agent: ${s.userAgent}`].join('\n');
+  summary.textContent=[`B1 Label Studio compatibility snapshot`, `Time: ${new Date().toISOString()}`, `URL: ${s.url}`, `Deployed release: ${releaseInfo?.version||'unknown'}`, `Release SHA-256: ${releaseInfo?.sha256||'unknown'}`, `Secure context: ${s.secure?'Yes':'No'}`, `Web Bluetooth API: ${s.bt?'Available':'Unavailable'}`, `Bluetooth availability: ${s.btAvailability}`, `Web Share: ${s.share?'Available':'Unavailable'}`, `navigator.canShare: ${s.canShare?'Available':'Unavailable'}`, `Local storage: ${s.storage?'Available':'Unavailable'}`, `Canvas/toBlob: ${s.canvas&&s.toBlob?'Available':'Unavailable'}`, `File APIs: ${s.file&&s.blob&&s.reader?'Available':'Incomplete'}`, `crypto.randomUUID: ${s.uuid?'Available':'Unavailable'}`, `User agent: ${s.userAgent}`].join('\n');
 }
 document.getElementById('btCheck').onclick=async()=>{if(!navigator.bluetooth){btAvailability='API unavailable';render();return}if(typeof navigator.bluetooth.getAvailability!=='function'){btAvailability='API exposed; getAvailability unavailable';render();return}try{btAvailability=(await navigator.bluetooth.getAvailability())?'Yes':'No'}catch(e){btAvailability=`Error: ${e.message||e}`};render()};
 document.getElementById('copy').onclick=async()=>{try{await navigator.clipboard.writeText(summary.textContent);document.getElementById('copy').textContent='Copied';setTimeout(()=>document.getElementById('copy').textContent='Copy diagnostic summary',1400)}catch(_){const r=document.createRange();r.selectNodeContents(summary);const s=getSelection();s.removeAllRanges();s.addRange(r)}};
 render();
+fetch('./release-info.json',{cache:'no-store'}).then(r=>r.ok?r.json():Promise.reject(new Error(`HTTP ${r.status}`))).then(x=>{releaseInfo=x;render()}).catch(()=>{releaseInfo={version:'unavailable',sha256:''};render()});
 </script></body></html>
