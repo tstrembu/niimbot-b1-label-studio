@@ -2,8 +2,8 @@
 import base64, gzip, hashlib, json, pathlib, sys
 
 BASE_SHA = "b0e454f0d5720ddc24c5ce6c3ec616ad20a1cada854eb7aa40918abea5ccdb52"
-OUT_SHA = "236ef2ccf2159694dfdfdcefbb556b1014e658ab1c7e259082b41fbb1b9c97f7"
-OUT_BYTES = 180454
+OUT_SHA = "8360ee3661da495538eec598908e470ecfb7aa31b76b3b7d15bb8a9530c207bb"
+OUT_BYTES = 181130
 
 def sha256_bytes(b):
     return hashlib.sha256(b).hexdigest()
