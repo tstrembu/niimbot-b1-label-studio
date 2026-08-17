@@ -6,9 +6,10 @@ A standalone, browser-based label designer and direct-print qualification build 
 
 **https://tstrembu.github.io/niimbot-b1-label-studio/**
 
-The GitHub Pages workflow reconstructs the verified v4.1.1 base, applies the evidence-driven v4.2.0 line patch, verifies the resulting artifact SHA-256, and only then deploys it as `index.html`.
+The GitHub Pages workflow reconstructs the exact compressed v4.2.0 release payload, verifies its SHA-256 and byte count, and only then deploys it as `index.html`.
 
-**v4.2.0 SHA-256:** `8360ee3661da495538eec598908e470ecfb7aa31b76b3b7d15bb8a9530c207bb`
+**v4.2.0 SHA-256:** `8360ee3661da495538eec598908e470ecfb7aa31b76b3b7d15bb8a9530c207bb`  
+**Decoded HTML size:** `181130` bytes
 
 ## Why v4.2.0 exists
 
@@ -38,7 +39,7 @@ Compatibility diagnostics:
 
 **https://tstrembu.github.io/niimbot-b1-label-studio/compat.html**
 
-The compatibility page now reads `release-info.json` and displays the actually deployed version and SHA-256 alongside browser/Bluetooth capabilities.
+The compatibility page reads `release-info.json` and displays the actually deployed version and SHA-256 alongside browser/Bluetooth capabilities.
 
 ## Qualified transport baseline
 
@@ -54,18 +55,19 @@ The v4.2.0 QR/UI refinements do **not** change the qualified transmit/print-task
 
 ## Repository layout
 
-- `release/v4.1.1/part*.b64` — losslessly compressed canonical v4.1.1 qualification base
-- `release/v4.2.0/line-patch.json.gz.b64` — compact evidence-driven v4.2.0 line replacement payload
-- `tools/apply_v420.py` — verifies the v4.1.1 base, applies the patch, then verifies the exact v4.2.0 SHA/byte count
-- `docs/QA_RECORD_v4.2.0.md` — v4.2.0 QA and frozen-path record
+- `release/v4.1.1/part*.b64` — archived losslessly compressed v4.1.1 qualification base
+- `release/v4.2.0/part*.b64` — losslessly compressed canonical v4.2.0 release payload
+- `release/v4.2.0/SHA256SUMS` — canonical v4.2.0 integrity hash
+- `docs/HARDWARE_FINDINGS.md` — evidence actually observed on the physical B1
+- `docs/QA_RECORD_v4.2.0.md` — v4.2.0 automated/static QA and frozen-path record
 - `docs/RELEASE_NOTES_v4.2.0.md` — change summary
 - `docs/PHYSICAL_QUALIFICATION_PROTOCOL.md` — T01–T12 B1 hardware qualification matrix
 - `docs/IPHONE_TESTING.md` — iPhone/Bluefy test instructions
-- `.github/workflows/pages.yml` — integrity-verified GitHub Pages deployment
+- `.github/workflows/pages.yml` — SHA-verified GitHub Pages deployment
 
 ## Deployment integrity
 
-The deployment fails rather than publishing if either the frozen v4.1.1 base hash or the resulting v4.2.0 hash/byte count differs from the expected values.
+The deployment fails rather than publishing if the reconstructed v4.2.0 HTML does not match both the expected **SHA-256** and **181130-byte** decoded size. v4.1.1 remains archived for regression comparison.
 
 ## Status
 
