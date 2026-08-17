@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b0f14">
+<title>B1 iPhone Compatibility Check</title>
+<style>
+:root{color-scheme:dark;--bg:#0b0f14;--card:#121821;--line:#293241;--text:#f4f7fb;--dim:#aeb8c5;--ok:#3ddc97;--warn:#ffc857;--bad:#ff6b6b;--accent:#57a6ff}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:15px/1.45 -apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif}.wrap{max-width:640px;margin:auto;padding:calc(18px + env(safe-area-inset-top)) 14px calc(28px + env(safe-area-inset-bottom))}h1{font-size:24px;margin:0 0 4px}.sub{color:var(--dim);margin:0 0 16px}.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;margin:12px 0}.row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid var(--line)}.row:last-child{border-bottom:0}.name{font-weight:650}.detail{font-size:12px;color:var(--dim);word-break:break-word}.pill{padding:4px 9px;border-radius:999px;font-size:12px;font-weight:700;white-space:nowrap}.ok{background:rgba(61,220,151,.14);color:var(--ok)}.warn{background:rgba(255,200,87,.14);color:var(--warn)}.bad{background:rgba(255,107,107,.14);color:var(--bad)}button,a.btn{appearance:none;border:1px solid var(--line);background:#1a2330;color:var(--text);border-radius:12px;padding:12px 14px;font:inherit;font-weight:650;text-decoration:none;text-align:center;display:block;width:100%}button.primary,a.primary{background:var(--accent);color:#061321;border-color:transparent}.actions{display:grid;gap:9px}.mono{white-space:pre-wrap;word-break:break-word;font:12px/1.45 ui-monospace,SFMono-Regular,Menlo,monospace;background:#090d12;border:1px solid var(--line);border-radius:10px;padding:10px;margin-top:9px}.note{font-size:13px;color:var(--dim)}
+</style>
+</head>
+<body><main class="wrap">
+<h1>B1 iPhone Compatibility Check</h1>
+<p class="sub">Read-only browser/runtime diagnostics for B1 Label Studio v4.1.1. This page does not connect to the printer or change the frozen print baseline.</p>
+<section class="card" id="checks"></section>
+<section class="card">
+<div class="actions"><button id="btCheck">Check Bluetooth availability</button><button id="copy">Copy diagnostic summary</button><a class="btn primary" href="./">Open B1 Label Studio</a></div>
+<p class="note">The Bluetooth availability check does not open the device chooser. The main app requests the B1 only after you tap Connect B1.</p>
+<div id="summary" class="mono"></div>
+</section>
+</main>
+<script>
+'use strict';
+const checks=document.getElementById('checks'),summary=document.getElementById('summary');
+let btAvailability='Not checked';
+function yes(v){return v?'Available':'Unavailable'}
+function row(name,value,state,detail=''){return `<div class="row"><div><div class="name">${name}</div>${detail?`<div class="detail">${detail}</div>`:''}</div><span class="pill ${state}">${value}</span></div>`}
+function snapshot(){
+  const bt=!!navigator.bluetooth, secure=window.isSecureContext===true, share=typeof navigator.share==='function', canShare=typeof navigator.canShare==='function';
+  let storage=false;try{const k='__b1compat__';localStorage.setItem(k,'1');storage=localStorage.getItem(k)==='1';localStorage.removeItem(k)}catch(_){}
+  const canvas=document.createElement('canvas'),toBlob=typeof canvas.toBlob==='function';
+  return {secure,bt,btAvailability,share,canShare,storage,canvas:!!canvas.getContext('2d'),toBlob,file:typeof File==='function',blob:typeof Blob==='function',reader:typeof FileReader==='function',uuid:typeof crypto?.randomUUID==='function',url:location.href,userAgent:navigator.userAgent};
+}
+function render(){const s=snapshot();checks.innerHTML=
+  row('Secure HTTPS context',s.secure?'Yes':'No',s.secure?'ok':'bad',s.secure?'Required for Web Bluetooth and other protected browser APIs.':'Open the GitHub Pages HTTPS URL.')+
+  row('Web Bluetooth API',yes(s.bt),s.bt?'ok':'warn',s.bt?'navigator.bluetooth is exposed by this runtime.':'Direct B1 BLE printing is unavailable in this runtime.')+
+  row('Bluetooth adapter availability',s.btAvailability,s.btAvailability==='Yes'?'ok':s.btAvailability==='No'?'bad':'warn')+
+  row('Web Share',yes(s.share),s.share?'ok':'warn')+
+  row('File sharing probe',yes(s.canShare),s.canShare?'ok':'warn')+
+  row('Local storage',yes(s.storage),s.storage?'ok':'bad')+
+  row('Canvas 2D + PNG blob',s.canvas&&s.toBlob?'Available':'Unavailable',s.canvas&&s.toBlob?'ok':'bad')+
+  row('File / Blob / FileReader',s.file&&s.blob&&s.reader?'Available':'Incomplete',s.file&&s.blob&&s.reader?'ok':'bad')+
+  row('crypto.randomUUID',yes(s.uuid),s.uuid?'ok':'warn');
+  summary.textContent=[`B1 Label Studio compatibility snapshot`, `Time: ${new Date().toISOString()}`, `URL: ${s.url}`, `Secure context: ${s.secure?'Yes':'No'}`, `Web Bluetooth API: ${s.bt?'Available':'Unavailable'}`, `Bluetooth availability: ${s.btAvailability}`, `Web Share: ${s.share?'Available':'Unavailable'}`, `navigator.canShare: ${s.canShare?'Available':'Unavailable'}`, `Local storage: ${s.storage?'Available':'Unavailable'}`, `Canvas/toBlob: ${s.canvas&&s.toBlob?'Available':'Unavailable'}`, `File APIs: ${s.file&&s.blob&&s.reader?'Available':'Incomplete'}`, `crypto.randomUUID: ${s.uuid?'Available':'Unavailable'}`, `User agent: ${s.userAgent}`].join('\n');
+}
+document.getElementById('btCheck').onclick=async()=>{if(!navigator.bluetooth){btAvailability='API unavailable';render();return}if(typeof navigator.bluetooth.getAvailability!=='function'){btAvailability='API exposed; getAvailability unavailable';render();return}try{btAvailability=(await navigator.bluetooth.getAvailability())?'Yes':'No'}catch(e){btAvailability=`Error: ${e.message||e}`};render()};
+document.getElementById('copy').onclick=async()=>{try{await navigator.clipboard.writeText(summary.textContent);document.getElementById('copy').textContent='Copied';setTimeout(()=>document.getElementById('copy').textContent='Copy diagnostic summary',1400)}catch(_){const r=document.createRange();r.selectNodeContents(summary);const s=getSelection();s.removeAllRanges();s.addRange(r)}};
+render();
+</script></body></html>
