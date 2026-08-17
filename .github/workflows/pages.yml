@@ -1,0 +1,76 @@
+name: Deploy frozen v4.1.1 to GitHub Pages
+
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+  actions: read
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Reconstruct and verify frozen release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+
+      - name: Reconstruct v4.1.1 and verify integrity
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p _site
+          cat release/v4.1.1/part*.b64 > /tmp/b1-v4.1.1.html.gz.b64
+          base64 --decode /tmp/b1-v4.1.1.html.gz.b64 > /tmp/b1-v4.1.1.html.gz
+          gzip -dc /tmp/b1-v4.1.1.html.gz > _site/index.html
+
+          printf '%s  %s\n' \
+            'b0e454f0d5720ddc24c5ce6c3ec616ad20a1cada854eb7aa40918abea5ccdb52' \
+            '_site/index.html' | sha256sum -c -
+
+          test "$(wc -c < _site/index.html)" -eq 178312
+          cp compat.html _site/compat.html
+          touch _site/.nojekyll
+
+          cat > _site/release-info.json <<'JSON'
+          {
+            "app": "NIIMBOT B1 Label Studio Ultimate",
+            "version": "4.1.1",
+            "qualificationCandidate": true,
+            "targetPrinter": "NIIMBOT B1",
+            "modelId": 4096,
+            "dpi": 203,
+            "sha256": "b0e454f0d5720ddc24c5ce6c3ec616ad20a1cada854eb7aa40918abea5ccdb52",
+            "bundleCeilingBytes": 240,
+            "adaptivePaceMs": [10, 40],
+            "heartbeatIntervalMs": 15000
+          }
+          JSON
+
+      - name: Upload verified Pages artifact
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: _site
+
+  deploy:
+    name: Deploy to GitHub Pages
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deploy Pages artifact
+        id: deployment
+        uses: actions/deploy-pages@v4
