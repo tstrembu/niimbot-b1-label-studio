@@ -1,7 +1,7 @@
 # NIIMBOT B1 Label Studio Ultimate v4.2.0 — QR Production Profile QA Record
 
 **Artifact:** `NIIMBOT_B1_Label_Studio_Ultimate_v4.2.0.html`  
-**Release intent:** evidence-driven behavioral refinement following successful physical B1/iPhone/Bluefy printing and QR scan testing. BLE transport, print-task sequencing, canonical QR encoding, rasterization, and direct-print packet behavior remain unchanged from v4.1.1.  
+**Release intent:** evidence-driven behavioral refinement following successful physical B1/iPhone/Bluefy printing and QR scan testing. The qualified B1 transmit/print-task path, canonical QR matrix generation, rasterization, packetization, and direct-print sequencing remain unchanged from v4.1.1; v4.2.0 additionally recognizes the observed `0xD3` raster-row telemetry as a read-only diagnostic.  
 **SHA-256:** `236ef2ccf2159694dfdfdcefbb556b1014e658ab1c7e259082b41fbb1b9c97f7`  
 **Bytes:** `180454`
 
@@ -29,16 +29,17 @@ These observations justify optimizing defaults for the common ~70–80-byte URL 
 - Refined QR preflight: fewer than 3 dots/module remains a blocking error; 3 dots/module is one production warning with repeatability guidance; the redundant generic “Version 3+ is dense” warning was removed.
 - QR payload-length warning now begins above 96 UTF-8 bytes, where shortening is more likely to improve module size for this layout.
 - Text preflight now combines “small text” and “auto-fit reduced” into one warning instead of emitting two warnings for the same final font size.
+- The observed B1 `0xD3` packet is now surfaced as **Last raster row telemetry** in Bluetooth diagnostics. For a 160-row label, `0xD3 [0,159,1]` is displayed as `159 / 159 · complete · flag 1`. This is diagnostic only and does not alter transaction handling or print completion logic.
 - SOP copy now records the physically scan-proven 40×20, EC-M, 3-dot QR profile without claiming universal stock/firmware qualification.
 
 ## Automated validation
 
-`test_v420.py` completed **13/13 checks**:
+`test_v420.py` completed **14/14 checks**:
 
 1. HTML parses and all DOM IDs are unique (**127 / 127**).
 2. No external runtime script dependencies.
 3. Version identifiers are consistently v4.2.0.
-4. The entire B1 BLE transport block is byte-for-byte unchanged from v4.1.1.
+4. Qualified BLE transmit / print-task functions are byte-for-byte unchanged from v4.1.1.
 5. The supplied 74-byte verification URL defaults to Version 5 / 3 dots per module / 135 printed dots.
 6. The representative `Thymosin Alpha-1` QR + text Quick Create label has **0 preflight errors**.
 7. Text auto-fit warnings are de-duplicated.
@@ -48,12 +49,13 @@ These observations justify optimizing defaults for the common ~70–80-byte URL 
 11. Live Quick QR metadata correctly reports the 74-byte Version-5 / 3-dot geometry.
 12. Maximize-QR control keeps the resulting QR inside the safe area.
 13. The widened QR + text region avoids measured text overflow in the browser QA case.
+14. B1 `0xD3` raster-row telemetry is recognized and reports the 160-row proof as complete (`159 / 159`).
 
 Both embedded JavaScript blocks pass `node --check`.
 
 ## Frozen transport / rendering confirmation
 
-The following remain unchanged from v4.1.1:
+The following qualified behaviors remain unchanged from v4.1.1:
 
 - BLE service/characteristic UUIDs
 - `BLE_BUNDLE_MAX=240`
@@ -64,12 +66,13 @@ The following remain unchanged from v4.1.1:
 - `qrPayloadInfo`, `qrMatrix`, `qrLayout`
 - `localElementCanvas`, `renderedElementCanvas`
 - `toBitmap`
+- `lowLevelWrite`, `writeFrames`, `transact`
 - `sendBitmapRows`
 - `beginPrintTask`, `sendOnePage`
 - `printJob`, `printDistinctBatch`, `cancelPrint`
 - `bitmapToSvg`
 
-This release changes **QR defaults, layout ergonomics, and preflight messaging**, not the encoded QR matrix or B1 transport.
+The receive-side notification handler has one intentional diagnostic refinement: `0xD3` is parsed into raster-row telemetry instead of being logged only as an unsolicited packet. It does **not** replace status polling or determine job success.
 
 ## Visual QA
 
