@@ -8,7 +8,7 @@ A standalone, browser-based label designer and direct-print qualification build 
 
 The GitHub Pages workflow reconstructs the verified v4.1.1 base, applies the evidence-driven v4.2.0 line patch, verifies the resulting artifact SHA-256, and only then deploys it as `index.html`.
 
-**v4.2.0 SHA-256:** `236ef2ccf2159694dfdfdcefbb556b1014e658ab1c7e259082b41fbb1b9c97f7`
+**v4.2.0 SHA-256:** `8360ee3661da495538eec598908e470ecfb7aa31b76b3b7d15bb8a9530c207bb`
 
 ## Why v4.2.0 exists
 
