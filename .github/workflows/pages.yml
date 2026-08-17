@@ -48,9 +48,9 @@ jobs:
             release/v4.2.0/line-patch.json.gz.b64 \
             _site/index.html
           printf '%s  %s\n' \
-            '236ef2ccf2159694dfdfdcefbb556b1014e658ab1c7e259082b41fbb1b9c97f7' \
+            '8360ee3661da495538eec598908e470ecfb7aa31b76b3b7d15bb8a9530c207bb' \
             '_site/index.html' | sha256sum -c -
-          test "$(wc -c < _site/index.html)" -eq 180454
+          test "$(wc -c < _site/index.html)" -eq 181130
           cp compat.html _site/compat.html
           touch _site/.nojekyll
 
@@ -63,7 +63,7 @@ jobs:
             "targetPrinter": "NIIMBOT B1",
             "modelId": 4096,
             "dpi": 203,
-            "sha256": "236ef2ccf2159694dfdfdcefbb556b1014e658ab1c7e259082b41fbb1b9c97f7",
+            "sha256": "8360ee3661da495538eec598908e470ecfb7aa31b76b3b7d15bb8a9530c207bb",
             "qrProductionProfile": {
               "ecc": "M",
               "minimumDotsPerModule": 3,
