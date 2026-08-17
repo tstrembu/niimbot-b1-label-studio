@@ -16,7 +16,8 @@ v4.1.1 Quick Create targeted 132 dots, which forced that Version-5 payload down 
 - Long payload editing is easier on iPhone via a two-line textarea.
 - QR + text gains 6 more dots of text width while preserving safe margins.
 - Preflight removes redundant QR density warnings and duplicate text auto-fit warnings.
+- The physically observed B1 `0xD3` raster-row packet is surfaced as read-only diagnostics; for the 160-row proof, `[0,159,1]` is displayed as `159 / 159 · complete · flag 1`. Status polling remains the authoritative print-completion path.
 
 ## What did not change
 
-The B1 BLE transport, model verification, 240-byte bundle ceiling, 10–40 ms pacing, 15-second idle heartbeat, QR matrix generator, canonical 1-bit raster, RLE packetization, print-task sequencing, cancellation path, and Pixel-Faithful SVG conversion are unchanged from v4.1.1.
+The qualified B1 transmit/print-task behavior remains unchanged: model verification, 240-byte bundle ceiling, 10–40 ms pacing, 15-second idle heartbeat, QR matrix generator, canonical 1-bit raster, RLE packetization, print-task sequencing, cancellation path, and Pixel-Faithful SVG conversion are unchanged from v4.1.1. The only BLE-adjacent change is read-only interpretation of the observed `0xD3` notification for diagnostics.
