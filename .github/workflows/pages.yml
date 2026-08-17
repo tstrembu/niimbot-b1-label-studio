@@ -1,4 +1,4 @@
-name: Deploy frozen v4.1.1 to GitHub Pages
+name: Deploy verified v4.2.0 to GitHub Pages
 
 on:
   push:
@@ -17,7 +17,7 @@ concurrency:
 
 jobs:
   build:
-    name: Reconstruct and verify frozen release
+    name: Reconstruct and verify v4.2.0
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -26,32 +26,54 @@ jobs:
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
 
-      - name: Reconstruct v4.1.1 and verify integrity
+      - name: Reconstruct v4.1.1 base and verify integrity
         shell: bash
         run: |
           set -euo pipefail
           mkdir -p _site
           cat release/v4.1.1/part*.b64 > /tmp/b1-v4.1.1.html.gz.b64
           base64 --decode /tmp/b1-v4.1.1.html.gz.b64 > /tmp/b1-v4.1.1.html.gz
-          gzip -dc /tmp/b1-v4.1.1.html.gz > _site/index.html
-
+          gzip -dc /tmp/b1-v4.1.1.html.gz > /tmp/b1-v4.1.1.html
           printf '%s  %s\n' \
             'b0e454f0d5720ddc24c5ce6c3ec616ad20a1cada854eb7aa40918abea5ccdb52' \
-            '_site/index.html' | sha256sum -c -
+            '/tmp/b1-v4.1.1.html' | sha256sum -c -
+          test "$(wc -c < /tmp/b1-v4.1.1.html)" -eq 178312
 
-          test "$(wc -c < _site/index.html)" -eq 178312
+      - name: Apply evidence-driven v4.2.0 patch and verify release
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 tools/apply_v420.py \
+            /tmp/b1-v4.1.1.html \
+            release/v4.2.0/line-patch.json.gz.b64 \
+            _site/index.html
+          printf '%s  %s\n' \
+            '236ef2ccf2159694dfdfdcefbb556b1014e658ab1c7e259082b41fbb1b9c97f7' \
+            '_site/index.html' | sha256sum -c -
+          test "$(wc -c < _site/index.html)" -eq 180454
           cp compat.html _site/compat.html
           touch _site/.nojekyll
 
           cat > _site/release-info.json <<'JSON'
           {
             "app": "NIIMBOT B1 Label Studio Ultimate",
-            "version": "4.1.1",
+            "version": "4.2.0",
             "qualificationCandidate": true,
+            "releaseBasis": "physical B1 + iPhone + Bluefy evidence",
             "targetPrinter": "NIIMBOT B1",
             "modelId": 4096,
             "dpi": 203,
-            "sha256": "b0e454f0d5720ddc24c5ce6c3ec616ad20a1cada854eb7aa40918abea5ccdb52",
+            "sha256": "236ef2ccf2159694dfdfdcefbb556b1014e658ab1c7e259082b41fbb1b9c97f7",
+            "qrProductionProfile": {
+              "ecc": "M",
+              "minimumDotsPerModule": 3,
+              "preferredDotsPerModule": 4,
+              "testedLongUrlBytes": 74,
+              "testedVersion": 5,
+              "testedPrintedDots": 135,
+              "testedDensity": 3,
+              "singleLabelPhysicalScan": "pass"
+            },
             "bundleCeilingBytes": 240,
             "adaptivePaceMs": [10, 40],
             "heartbeatIntervalMs": 15000
