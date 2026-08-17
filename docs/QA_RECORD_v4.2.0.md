@@ -2,8 +2,8 @@
 
 **Artifact:** `NIIMBOT_B1_Label_Studio_Ultimate_v4.2.0.html`  
 **Release intent:** evidence-driven behavioral refinement following successful physical B1/iPhone/Bluefy printing and QR scan testing. The qualified B1 transmit/print-task path, canonical QR matrix generation, rasterization, packetization, and direct-print sequencing remain unchanged from v4.1.1; v4.2.0 additionally recognizes the observed `0xD3` raster-row telemetry as a read-only diagnostic.  
-**SHA-256:** `236ef2ccf2159694dfdfdcefbb556b1014e658ab1c7e259082b41fbb1b9c97f7`  
-**Bytes:** `180454`
+**SHA-256:** `8360ee3661da495538eec598908e470ecfb7aa31b76b3b7d15bb8a9530c207bb`  
+**Bytes:** `181130`
 
 ## Physical evidence that motivated v4.2.0
 
